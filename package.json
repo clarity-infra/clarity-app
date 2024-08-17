@@ -1,0 +1,26 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "animejs": "^3.2.2",
+    "nuxt": "^3.12.4",
+    "rete": "^2.0.3",
+    "rete-area-plugin": "^2.0.4",
+    "rete-connection-plugin": "^2.0.4",
+    "rete-vue-plugin": "^2.1.0",
+    "vue": "latest",
+    "vuetify-nuxt-module": "^0.17.0"
+  },
+  "devDependencies": {
+    "@mdi/font": "^7.4.47",
+    "@types/animejs": "^3.1.12"
+  }
+}
