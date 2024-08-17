@@ -39,10 +39,19 @@
       </div>
     </div>
 
-   
-
-    <VNavigationDrawer v-model="showNodeDetail" location="right" temporary>
-        test {{ selectedNode }}
+    <VNavigationDrawer v-model="showNodeDetail" location="right" temporary :width="$vuetify.display.width - 400">
+      <template v-if="selectedNode">
+        <VToolbar>
+          <VToolbarTitle>{{ selectedNode.label }}</VToolbarTitle>
+          <VSpacer />
+          <VBtn @click="showNodeDetail = false">Close</VBtn>
+        </VToolbar>
+        <VTabs>
+          <VTab>Overview</VTab>
+          <VTab>Setting</VTab>
+        </VTabs>
+        {{ selectedNode.controls }}
+      </template>
     </VNavigationDrawer>
 </template>
 
@@ -180,7 +189,28 @@ async function createEditor(container: HTMLElement) {
   area.addPipe(context => {
     if (context.type === 'nodepicked') {
         selectedNode.value = editor.getNode(context.data.id);
-        AreaExtensions.zoomAt(area, [selectedNode.value]);
+
+        const onMouseMove = () => {
+          selectedNode.value = undefined;
+          showNodeDetail.value = false;
+          revokeTraking()
+        }
+
+        const onMouseUp = () => {
+          if(selectedNode.value) {
+            AreaExtensions.zoomAt(area, [selectedNode.value]);
+            showNodeDetail.value = true;
+            revokeTraking()
+          }
+        }
+
+        function revokeTraking() {
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
     }
 
     return context
@@ -199,13 +229,7 @@ watch(showNodeDetail, (newCondition) => {
     }
 })
 
-watch(selectedNode, (newCondition) => {
-    if(newCondition) {
-        showNodeDetail.value = true;
-    }
-})
-
 onMounted(() => {
-    createEditor(diagram.value)
+    createEditor(diagram.value);
 })
 </script>
