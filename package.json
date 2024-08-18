@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@pinia/nuxt": "^0.5.3",
     "animejs": "^3.2.2",
     "nuxt": "^3.12.4",
     "rete": "^2.0.3",

@@ -39,17 +39,26 @@
       </div>
     </div>
 
-    <VNavigationDrawer v-model="showNodeDetail" location="right" temporary :width="$vuetify.display.width - 400">
+    <VNavigationDrawer 
+      v-model="showNodeDetail" 
+      style="background-color: rgba(255, 255, 255, 0.3); backdrop-filter: blur(3px);" 
+      temporary 
+      :width="$vuetify.display.width"
+    >
       <template v-if="selectedNode">
         <VToolbar>
           <VToolbarTitle>{{ selectedNode.label }}</VToolbarTitle>
           <VSpacer />
           <VBtn @click="showNodeDetail = false">Close</VBtn>
+
+          <template #extension>
+            <VTabs>
+              <VTab>Overview</VTab>
+              <VTab disabled>Setting</VTab>
+            </VTabs>
+            </template>
         </VToolbar>
-        <VTabs>
-          <VTab>Overview</VTab>
-          <VTab>Setting</VTab>
-        </VTabs>
+        
         {{ selectedNode.controls }}
       </template>
     </VNavigationDrawer>
@@ -57,91 +66,16 @@
 
 <script setup lang="ts">
 import { NodeEditor, type GetSchemes, ClassicPreset } from "rete";
-import { AreaPlugin, AreaExtensions, Zoom } from "rete-area-plugin";
+import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
 import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
 import { VuePlugin, Presets, type VueArea2D } from "rete-vue-plugin";
-import anime from "animejs/lib/anime.es.js";
+import { ZoomHendler } from "~/composable/ratejs/hendlers/zoom";
 
 type Schemes = GetSchemes<
   ClassicPreset.Node,
   ClassicPreset.Connection<ClassicPreset.Node, ClassicPreset.Node>
 >;
 type AreaExtra = VueArea2D<Schemes>;
-
-function screenToArea(x: number, y: number, t: any) {
-  const { x: tx, y: ty, k } = t;
-  return { x: (x - tx) / k, y: (y - ty) / k };
-}
-
-function areaToScreen(x: number, y: number, t: any) {
-  const { x: tx, y: ty, k } = t;
-  return { x: x * k + tx, y: y * k + ty };
-}
-
-class SmoothZoom extends Zoom {
-  animation?: any;
-
-  constructor(
-    intensity: number,
-    private duration: number,
-    private easing: string,
-    private area: AreaPlugin<any>
-  ) {
-    super(intensity);
-  }
-
-
-  public override wheel = (e: WheelEvent) => {
-    e.preventDefault();
-
-    const isNegative = e.deltaY < 0;
-    const delta = isNegative ? this.intensity : -this.intensity;
-    const { left, top } = this.container.getBoundingClientRect();
-    const ox = e.clientX - left;
-    const oy = e.clientY - top;
-
-    const coords = screenToArea(ox, oy, this.area.area.transform);
-
-    const { k } = this.area.area.transform;
-    const targets = {
-      zoom: k
-    };
-    const { duration, easing } = this;
-
-    if (this.animation) {
-      this.animation.reset();
-    }
-    this.animation = anime({
-      targets,
-      x: coords.x,
-      y: coords.y,
-      zoom: k * (1 + delta),
-      duration,
-      easing,
-      update: () => {
-        const currentTransform = this.area.area.transform;
-
-        const coordinates = areaToScreen(coords.x, coords.y, currentTransform);
-
-        const nextX = coordinates.x - coords.x * targets.zoom;
-        const nextY = coordinates.y - coords.y * targets.zoom;
-
-        this.area.area.zoom(
-          targets.zoom,
-          nextX - currentTransform.x,
-          nextY - currentTransform.y
-        );
-      }
-    });
-  };
-
-  override destroy() {
-    super.destroy();
-    if (this.animation) {
-      this.animation.reset();
-    }
-  }
-}
 
 
 async function createEditor(container: HTMLElement) {
@@ -183,7 +117,7 @@ async function createEditor(container: HTMLElement) {
   AreaExtensions.zoomAt(area, editor.getNodes());
 
   area.area.setZoomHandler(
-    new SmoothZoom(0.5, 200, "cubicBezier(.45,.91,.49,.98)", area)
+    new ZoomHendler(0.5, 200, "cubicBezier(.45,.91,.49,.98)", area)
   );
 
   area.addPipe(context => {
