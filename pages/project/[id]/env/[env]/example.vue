@@ -14,24 +14,12 @@
               ></v-fab>
             </template>
 
-            <v-btn key="2" icon>
-              <v-tooltip
-                activator="parent"
-                location="start"
-              >
-                Add Load Balancer
-              </v-tooltip>
-              <VIcon icon="$info" />
+            <v-btn key="2">
+              Add Load Balancer
             </v-btn>
 
-            <v-btn key="1" icon>
-              <v-tooltip
-                activator="parent"
-                location="start"
-              >
-                Add App
-              </v-tooltip>
-              <VIcon icon="$success" />
+            <v-btn key="1" @click="createApp">
+              Add Application
             </v-btn>
             
           </v-speed-dial>
@@ -151,6 +139,10 @@ async function createEditor(container: HTMLElement) {
   })
 
   return () => area.destroy();
+}
+
+function createApp() {
+  
 }
 
 const diagram = ref();
